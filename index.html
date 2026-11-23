@@ -160,12 +160,15 @@ function dailyChart(rows){
 }
 function renderAn(d){var k=d.kpi;
   var h='<div class="chips">'+PERS.map(function(x){return '<a class="chip'+(x[0]===PER?' on':'')+'" data-p="'+x[0]+'">'+x[1]+'</a>'}).join('')+'</div>';
-  h+='<div class="card"><div class="ct">Конверсия <small>'+esc(d.range)+'</small></div><div class="k4">';
+  h+='<div class="card"><div class="ct">Деньги <small>оплаты за '+esc(d.range)+'</small></div><div class="k4">';
+  h+='<div class="big o"><b>'+(k.com?'€'+num(k.com):'—')+'</b><span>комиссия Kiwitaxi</span></div><div class="big"><b>'+(k.gmv?'€'+num(k.gmv):'—')+'</b><span>оборот (GMV)</span></div></div>';
+  h+='<div class="kpis" style="margin-top:8px">'+kpi(k.payN,'оплат')+kpi(k.check?'€'+num(k.check):'—','средний чек')+kpi(k.margin!=null?k.margin+'%':'—','маржа')+'</div>';
+  h+='<div class="note">По дате оплаты (перевод тикета в Confirmed), все валюты в евро: '+esc(k.fx||'')+'.'+(k.noM?' Без суммы в тикете: '+k.noM+'.':'')+'</div></div>';
+  h+='<div class="card"><div class="ct">Конверсия <small>заявки за '+esc(d.range)+'</small></div><div class="k4">';
   h+='<div class="big"><b>'+pct(k.convClosed)+'</b><span>из закрытых в оплату</span></div><div class="big o"><b>'+pct(k.conv)+'</b><span>из всех заявок в оплату</span></div></div>';
   h+='<div class="kpis" style="margin-top:8px">'+kpi(pct(k.offP),'получили оффер')+kpi(pct(k.offPaid),'оффер → оплата')+kpi(hh(k.medOffer),'медиана до оффера')+'</div>';
-  h+='<div class="kpis" style="margin-top:8px">'+kpi(k.n,'заявок')+kpi(k.paid,'оплачено')+kpi(k.lost,'отменено')+'</div>';
-  h+='<div class="kpis" style="margin-top:8px">'+kpi(k.work,'в работе')+kpi(k.gmv?'€'+num(k.gmv):'—','GMV')+kpi(k.com?'€'+num(k.com):'—','комиссия')+'</div>';
-  h+='<div class="note">«Из закрытых» — оплаты среди тех, кто уже оплатил или отменил: честнее, пока много заявок в работе. GMV и комиссия — по оплаченным в EUR.'+(k.check?' Средний чек €'+num(k.check)+(k.margin!=null?', маржа '+k.margin+'%':'')+'.':'')+'</div></div>';
+  h+='<div class="kpis" style="margin-top:8px">'+kpi(k.n,'заявок')+kpi(k.paid,'из них оплачено')+kpi(k.lost,'отменено')+'</div>';
+  h+='<div class="note">Считается по заявкам, пришедшим за период. «Из закрытых» — оплаты среди тех, кто уже оплатил или отменил: честнее, пока '+k.work+' заявок ещё в работе.</div></div>';
   h+='<div class="card"><div class="ct">Воронка</div>';
   d.funnel.forEach(function(f,i){var w=d.funnel[0].n?Math.max(6,Math.round(f.n/d.funnel[0].n*100)):0;
     h+='<div class="fn'+(i===d.funnel.length-1?' pay':'')+'"><div class="l"><b>'+esc(f.name)+'</b><span>'+f.n+' · '+pct(f.all)+'</span></div><div class="bar"><i style="width:'+w+'%"></i></div></div>';
