@@ -208,7 +208,7 @@ function goalsCard(){var g=S().goals,m=B.an&&B.an.month&&B.an.month.kpi;if(!m)re
   if(!g.com&&!g.conv&&!g.offerH)return '<div class="card"><div class="ct">Цели на '+mon+'</div><div class="empty">Цели не заданы — <a class="lk" id="toSet">задать в настройках</a></div></div>';
   var h='<div class="card"><div class="ct">Цели на '+mon+' <small>прошло '+Math.floor(el)+' из '+dim+' дн.</small></div>';
   if(g.com){var p=Math.round(m.com/g.com*100),fc=Math.round(m.com/el*dim);h+=goalRow('Комиссия','€'+num(m.com)+' из €'+num(g.com),p,'Прогноз на конец месяца €'+num(fc)+(fc>=g.com?' — цель будет выполнена':' — не хватает €'+num(g.com-fc)),fc>=g.com)}
-  if(g.conv){var c=m.convClosed;h+=goalRow('Конверсия из закрытых',(c==null?'—':c+'%')+' · цель '+g.conv+'%',c==null?0:Math.round(c/g.conv*100),'',c!=null&&c>=g.conv)}
+  if(g.conv){var c=m.conv;h+=goalRow('Конверсия из всех заявок',(c==null?'—':c+'%')+' · цель '+g.conv+'%',c==null?0:Math.round(c/g.conv*100),'',c!=null&&c>=g.conv)}
   if(g.offerH){var o=m.medOffer;h+=goalRow('Время до оффера, медиана',(o==null?'—':hh(o))+' · цель ≤ '+hh(g.offerH),o==null?0:(o<=g.offerH?100:Math.round(g.offerH/o*100)),'',o!=null&&o<=g.offerH)}
   return h+'</div>'}
 var ATTO=false;
@@ -317,7 +317,7 @@ var SETD=null,TABN={an:'Аналитика',req:'Заявки',pr:'Цены',log
 function renderSet(){var s=SETD||(SETD=JSON.parse(JSON.stringify(S())));
   var sw=function(g,k,l,sub){return '<label class="sw"><span><b>'+esc(l)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><input type="checkbox" data-g="'+g+'" data-k="'+k+'"'+(s[g][k]?' checked':'')+'><i></i></label>'};
   var gi=function(k,l,u,ph){return '<label class="gi"><span>'+esc(l)+'</span><div><input type="number" inputmode="decimal" min="0" step="any" class="gin" data-goal="'+k+'" value="'+(s.goals[k]||'')+'" placeholder="'+ph+'"><em>'+u+'</em></div></label>'};
-  var h='<div class="card"><div class="ct">Цели на месяц</div>'+gi('com','Комиссия','€','например 3000')+gi('conv','Конверсия из закрытых','%','например 40')+gi('offerH','Время до оффера (медиана)','ч','например 2')+'<div class="note">Пустое поле — без цели. Прогресс видно на главной, в отчёте с графиком и в уведомлениях об оплате.</div></div>';
+  var h='<div class="card"><div class="ct">Цели на месяц</div>'+gi('com','Комиссия','€','например 3000')+gi('conv','Конверсия из всех заявок','%','например 25')+gi('offerH','Время до оффера (медиана)','ч','например 2')+'<div class="note">Пустое поле — без цели. Прогресс видно на главной, в отчёте с графиком и в уведомлениях об оплате.</div></div>';
   h+='<div class="card"><div class="ct">Уведомления в бот</div>'+sw('notify','pay','Новая оплата','сумма, комиссия и прогресс к цели')+sw('notify','chart','График к отчёту в 8:00 и 18:00','картинка за 14 дней + цифры и цели')+'<button class="b2" id="rnow" style="width:100%;margin-top:12px">Отправить отчёт с графиком сейчас</button></div>';
   h+='<div class="card"><div class="ct">Вкладки</div>'+Object.keys(TABN).map(function(k){return sw('tabs',k,TABN[k])}).join('')+'<div class="note">«Главная» и настройки есть всегда.</div></div>';
   h+='<div class="card"><div class="ct">Блоки на главной</div>'+Object.keys(BLKN).map(function(k){return sw('blocks',k,BLKN[k][0],BLKN[k][1])}).join('')+'</div>';
