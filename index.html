@@ -422,10 +422,10 @@ function renderDay(d){
   $('#v').innerHTML=h;
   document.querySelectorAll('.chip[data-i]').forEach(function(c){c.onclick=function(){DAY=+c.dataset.i;render()}});bindSeg();
 }
-var EVC={'новая заявка':'g','оплата':'g','поездка выполнена':'g','оффер':'','отмена':'r','ошибка загрузки':'r','смена статуса':'o'};
+var EVC={'новая заявка':'g','оплата':'g','поездка выполнена':'','завершение поездки':'','оффер':'','отмена':'r','ошибка загрузки':'r','смена статуса':'o'};
 function evRow(r){var c=EVC[r.e];return '<div class="row"><div class="t">'+esc(r.t)+'</div><div class="m"><div class="n">'+esc(r.b||r.id)+'</div><div class="d">'+(r.f?esc(r.f)+': ':'')+(r.was?esc(r.was)+' → ':'')+esc(r.now||'')+'</div></div><span class="tag'+(c?' '+c:'')+'">'+esc(r.e)+'</span></div>'}
-var LF=[['all','Все'],['new','Новые'],['offer','Офферы'],['pay','Оплаты'],['cancel','Отмены'],['status','Статусы'],['err','Ошибки']];
-var LFN={new:function(r){return r.e==='новая заявка'},offer:function(r){return r.e==='оффер'},pay:function(r){return r.e==='оплата'||r.e==='поездка выполнена'},cancel:function(r){return r.e==='отмена'},status:function(r){return r.e==='смена статуса'},err:function(r){return r.e==='ошибка загрузки'}};
+var LF=[['all','Все'],['new','Новые'],['offer','Офферы'],['pay','Оплаты'],['done','Поездки'],['cancel','Отмены'],['status','Статусы'],['err','Ошибки']];
+var LFN={new:function(r){return r.e==='новая заявка'},offer:function(r){return r.e==='оффер'},pay:function(r){return r.e==='оплата'},done:function(r){return r.e==='поездка выполнена'||r.e==='завершение поездки'},cancel:function(r){return r.e==='отмена'},status:function(r){return r.e==='смена статуса'},err:function(r){return r.e==='ошибка загрузки'}};
 function lts(r){var m=/^(\d\d)\.(\d\d)\.(\d{4})/.exec(r.day||''),n=/(\d\d?):(\d\d)/.exec(r.t||'');return m?Date.UTC(+m[3],m[2]-1,+m[1],n?+n[1]:0,n?+n[2]:0)-MSKMS:null}
 function logData(){var rr=perRange('log'),rows=(B.log||[]).filter(function(r){return inR(rr,lts(r))});if(LFN[LOGF])rows=rows.filter(LFN[LOGF]);var q=LOGQ.trim().toLowerCase();if(q)rows=rows.filter(function(r){return (r.id+' '+r.b+' '+r.was+' '+r.now).toLowerCase().indexOf(q)>=0});return{total:rows.length,rows:rows}}
 function renderLog(){var d=logData();
