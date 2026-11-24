@@ -267,11 +267,15 @@ function renderTr(){
   if(!p.date)h+='<div class="empty">Первый запрос придёт в '+esc(p.next)+' (Белград)</div>';
   else if(!it.length)h+='<div class="empty">Всё из запроса перенесено 👌 Следующий запрос — '+esc(p.next)+'</div>';
   else{if(!p.today)h+='<div class="note">Это вчерашний запрос — новый придёт в '+esc(p.next)+'</div>';
+    h+='<div class="btns" style="margin-bottom:6px"><button class="b2" id="trAll">Выделить все</button><button class="b2" id="trNone">Снять все</button></div>';
     h+='<div class="list">'+it.map(function(x){return '<label class="row" style="cursor:pointer"><input type="checkbox" class="trc" value="'+esc(x.id)+'" checked style="width:20px;height:20px;margin-right:10px;flex:none"><div class="m"><div class="n">'+(x.kind==='new'?'🆕 ':'✏️ ')+esc(x.b)+'</div><div class="d">'+esc(x.kind==='new'?('новая заявка · '+(x.st||'')+(x.ch?' · '+x.ch:'')):('обновить: '+x.what))+'</div></div></label>'}).join('')+'</div>';
     h+='<div class="note">Время заявок ADM (из Slack) не переношу — его ставишь сам. Новые строки встают наверх воронки.</div><div class="btns"><button class="b1" id="trGo">Перенести выбранное ('+it.length+')</button></div>'}
   $('#v').innerHTML=h+'</div>';
   $('#trBack').onclick=function(){TRP=null;TRR=null;go('home')};
-  document.querySelectorAll('.trc').forEach(function(c){c.onchange=function(){var n=document.querySelectorAll('.trc:checked').length,b=$('#trGo');if(b)b.textContent='Перенести выбранное ('+n+')'}});
+  function trCnt(){var n=document.querySelectorAll('.trc:checked').length,b=$('#trGo');if(b)b.textContent='Перенести выбранное ('+n+')'}
+  document.querySelectorAll('.trc').forEach(function(c){c.onchange=trCnt});
+  if($('#trAll'))$('#trAll').onclick=function(){document.querySelectorAll('.trc').forEach(function(c){c.checked=true});trCnt()};
+  if($('#trNone'))$('#trNone').onclick=function(){document.querySelectorAll('.trc').forEach(function(c){c.checked=false});trCnt()};
   if($('#trGo'))$('#trGo').onclick=function(){var ids=[].slice.call(document.querySelectorAll('.trc:checked')).map(function(c){return c.value});if(!ids.length){toast('Ничего не выбрано');return}
     var b=this;b.disabled=true;b.textContent='Переношу… до 2 мин';
     call('tr_do',JSON.stringify(ids)).then(function(r){TRR=r;TRP=null;toast(r.msg);renderTr();loadBundle('bundle')}).catch(function(e){b.disabled=false;b.textContent='Перенести выбранное';toast('Ошибка: '+(e.message||e))})};
