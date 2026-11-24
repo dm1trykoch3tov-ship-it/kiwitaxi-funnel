@@ -176,6 +176,7 @@ function start(){
   try{var w=window.Telegram&&Telegram.WebApp;if(w){w.ready();w.expand();applyTheme();INIT=w.initData||''}}catch(e){}
   if(!INIT){$('#v').innerHTML='<div class="card"><div class="ct">Откройте из Telegram</div><div class="empty">Мини-апп работает только через кнопку «Воронка» в вашем боте.</div></div>';$('#hl').innerHTML='<span class="dot bad"></span><span>Нет доступа</span>';return}
   try{B=JSON.parse(localStorage.getItem('ma_b')||'null')}catch(e){B=null}
+  if(/[?&]tr=1/.test(location.search))TAB='tr';
   if(B)render();
   loadBundle('bundle');
   setInterval(function(){if(B)health(B.health)},60000);
@@ -188,6 +189,7 @@ function render(){if(!B)return;health(B.health);applyNav();
   else if(TAB==='set')renderSet();
   else if(TAB==='req')renderReq();
   else if(TAB==='pr')renderPr();
+  else if(TAB==='tr')renderTr();
   else if(LM==='day'){var d=B.day[DAY]||B.day[0];renderDay({title:d.title,kpi:d.kpi,events:d.events,table:B.dayTable,dates:B.dayDates})}
   else renderLog()}
 function seg(){return '<div class="seg"><a data-lm="feed" class="'+(LM==='feed'?'on':'')+'">Лента событий</a><a data-lm="day" class="'+(LM==='day'?'on':'')+'">Отчёт за день</a></div>'}
@@ -241,7 +243,7 @@ function renderHome(d){
   if(blk('unans')){h+='<div class="card"><div class="ct">Без ответа клиенту <small>дольше 60 мин, без ADM</small></div>';
     h+=d.unans.length?'<div class="list">'+d.unans.map(function(x){return '<div class="row"><div class="m"><div class="n">'+esc(x.b)+'</div><div class="d">'+esc(x.ch)+(x.link?' · <a class="lk" href="'+esc(x.link)+'" target="_blank">Intercom</a>':'')+'</div></div><span class="tag o">'+fmtMin(x.mins)+'</span></div>'}).join('')+'</div>':'<div class="empty">Всё отвечено 👍</div>';
     h+='</div>'}
-  if(blk('transfer'))h+='<div class="card"><div class="ct">К переносу в воронку <small>'+esc(d.transfer.at)+'</small></div><div class="tr">'+kpi(d.transfer.n,'новых','o')+kpi(d.transfer.c,'изменились')+kpi(d.transfer.k,'проверить')+'</div></div>';
+  if(blk('transfer'))h+='<div class="card"><div class="ct">К переносу в воронку <small>'+esc(d.transfer.at)+'</small></div><div class="tr">'+kpi(d.transfer.n,'новых','o')+kpi(d.transfer.c,'изменились')+kpi(d.transfer.k,'проверить')+'</div><div class="btns" style="margin-top:12px"><button class="b1" id="bTr">Перенести в воронку</button></div></div>';
   if(blk('report'))h+='<div class="card"><div class="ct">Отчёт проверки <small>'+esc(d.report.at||'')+'</small></div>'+(d.report.text?'<div class="pre">'+esc(d.report.text)+'</div>':'<div class="empty">Первый отчёт придёт в 8:00</div>')+'</div>';
   if(d.errors)h+='<div class="card"><div class="ct">Ошибки загрузки за сутки <span class="tag r">'+d.errors+'</span></div><div class="empty">Подробности — в «Журнале», фильтр «Ошибки».</div></div>';
   $('#v').innerHTML=h;
@@ -250,8 +252,29 @@ function renderHome(d){
   document.querySelectorAll('[data-ak]').forEach(function(x){x.onclick=function(){attnAct(x.dataset.ak,x.dataset.aa)}});
   if($('#attReset'))$('#attReset').onclick=function(){call('attn',JSON.stringify({act:'reset'})).then(function(){toast('Вернул скрытые');return loadBundle('bundle')}).catch(function(e){toast('Ошибка: '+(e.message||e))})};
   if($('#toSet'))$('#toSet').onclick=function(){go('set')};
+  if($('#bTr'))$('#bTr').onclick=function(){TRP=null;go('tr')};
   $('#bRef').onclick=function(){var b=this;b.disabled=true;b.textContent='Обновляю… до 4 мин';call('refresh').then(function(d){var m=d.msg;delete d.msg;setB(d);toast(m||'Обновлено')}).catch(function(e){b.disabled=false;b.textContent='Обновить из Intercom';toast('Ошибка: '+(e.message||e))})};
   $('#bUn').onclick=function(){var b=this;b.disabled=true;b.textContent='Проверяю в Intercom…';call('unanswered').then(function(r){b.disabled=false;b.textContent='Без ответа → в бот';toast(r.msg)}).catch(function(e){b.disabled=false;b.textContent='Без ответа → в бот';toast('Ошибка: '+(e.message||e))})};
+}
+/* v73: перенос в воронку — запрос приходит в 16:45, переносим по кнопке */
+var TRP=null,TRR=null;
+function renderTr(){
+  if(!TRP){$('#v').innerHTML='<div class="load"><div class="spin"></div>Загружаю перенос…</div>';
+    call('tr_plan').then(function(d){TRP=d;if(TAB==='tr')renderTr()}).catch(function(e){if(TAB==='tr')fail(e)});return}
+  var p=TRP,it=p.items||[],h='<div class="btns"><button class="b2" id="trBack">← На главную</button></div>';
+  if(TRR){h+='<div class="card"><div class="ct">Готово</div><div class="pre">'+esc([TRR.msg].concat(TRR.ok||[]).concat((TRR.skip||[]).map(function(x){return '⏭ '+x})).join('\n'))+'</div></div>'}
+  h+='<div class="card"><div class="ct">Перенос в воронку <small>'+(p.date?'запрос '+esc(p.date):'')+'</small></div>';
+  if(!p.date)h+='<div class="empty">Первый запрос придёт в '+esc(p.next)+' (Белград)</div>';
+  else if(!it.length)h+='<div class="empty">Всё из запроса перенесено 👌 Следующий запрос — '+esc(p.next)+'</div>';
+  else{if(!p.today)h+='<div class="note">Это вчерашний запрос — новый придёт в '+esc(p.next)+'</div>';
+    h+='<div class="list">'+it.map(function(x){return '<label class="row" style="cursor:pointer"><input type="checkbox" class="trc" value="'+esc(x.id)+'" checked style="width:20px;height:20px;margin-right:10px;flex:none"><div class="m"><div class="n">'+(x.kind==='new'?'🆕 ':'✏️ ')+esc(x.b)+'</div><div class="d">'+esc(x.kind==='new'?('новая заявка · '+(x.st||'')+(x.ch?' · '+x.ch:'')):('обновить: '+x.what))+'</div></div></label>'}).join('')+'</div>';
+    h+='<div class="note">Время заявок ADM (из Slack) не переношу — его ставишь сам. Новые строки встают наверх воронки.</div><div class="btns"><button class="b1" id="trGo">Перенести выбранное ('+it.length+')</button></div>'}
+  $('#v').innerHTML=h+'</div>';
+  $('#trBack').onclick=function(){TRP=null;TRR=null;go('home')};
+  document.querySelectorAll('.trc').forEach(function(c){c.onchange=function(){var n=document.querySelectorAll('.trc:checked').length,b=$('#trGo');if(b)b.textContent='Перенести выбранное ('+n+')'}});
+  if($('#trGo'))$('#trGo').onclick=function(){var ids=[].slice.call(document.querySelectorAll('.trc:checked')).map(function(c){return c.value});if(!ids.length){toast('Ничего не выбрано');return}
+    var b=this;b.disabled=true;b.textContent='Переношу… до 2 мин';
+    call('tr_do',JSON.stringify(ids)).then(function(r){TRR=r;TRP=null;toast(r.msg);renderTr();loadBundle('bundle')}).catch(function(e){b.disabled=false;b.textContent='Перенести выбранное';toast('Ошибка: '+(e.message||e))})};
 }
 /* периоды: во всех вкладках, кроме главной */
 var PD={an:'30',req:'all',pr:'all',log:'all'},PC={},ANC={},PERO=false;
