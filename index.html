@@ -268,7 +268,7 @@ function renderTr(){
   else if(!it.length)h+='<div class="empty">Всё из запроса перенесено 👌 Следующий запрос — '+esc(p.next)+'</div>';
   else{if(!p.today)h+='<div class="note">Это вчерашний запрос — новый придёт в '+esc(p.next)+'</div>';
     h+='<div class="btns" style="margin-bottom:6px"><button class="b2" id="trAll">Выделить все</button><button class="b2" id="trNone">Снять все</button></div>';
-    h+='<div class="list">'+it.map(function(x){return '<label class="row" style="cursor:pointer"><input type="checkbox" class="trc" value="'+esc(x.id)+'" checked style="width:20px;height:20px;margin-right:10px;flex:none"><div class="m"><div class="n">'+(x.kind==='new'?'🆕 ':'✏️ ')+esc(x.b)+'</div><div class="d">'+esc(x.kind==='new'?('новая заявка · '+(x.st||'')+(x.ch?' · '+x.ch:'')):('обновить: '+x.what))+'</div></div></label>'}).join('')+'</div>';
+    h+='<div class="list">'+it.map(function(x){return '<label class="row" style="cursor:pointer"><input type="checkbox" class="trc" value="'+esc(x.id)+'" checked style="width:20px;height:20px;margin-right:10px;flex:none"><div class="m"><div class="n">'+(x.kind==='new'?'🆕 ':x.kind==='fill'?'📝 ':'✏️ ')+esc(x.b)+'</div><div class="d">'+esc(x.kind==='new'?('новая заявка · '+(x.st||'')+(x.ch?' · '+x.ch:'')):x.kind==='fill'?x.what:('обновить: '+x.what))+'</div></div></label>'}).join('')+'</div>';
     h+='<div class="note">Время заявок ADM (из Slack) не переношу — его ставишь сам. Новые строки встают наверх воронки.</div><div class="btns"><button class="b1" id="trGo">Перенести выбранное ('+it.length+')</button></div>'}
   $('#v').innerHTML=h+'</div>';
   $('#trBack').onclick=function(){TRP=null;TRR=null;go('home')};
