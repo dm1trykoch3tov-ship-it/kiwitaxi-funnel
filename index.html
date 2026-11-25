@@ -213,7 +213,7 @@ function goalsCard(){var g=S().goals,m=B.an&&B.an.month&&B.an.month.kpi;if(!m)re
   var now=Date.now(),d=new Date(now+MSKMS),ms=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1)-MSKMS,dim=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate(),el=Math.max(1,(now-ms)/864e5),mon=MN[d.getUTCMonth()];
   if(!g.com&&!g.conv&&!g.offerH)return '<div class="card"><div class="ct">Цели на '+mon+'</div><div class="empty">Цели не заданы — <a class="lk" id="toSet">задать в настройках</a></div></div>';
   var h='<div class="card"><div class="ct">Цели на '+mon+' <small>прошло '+Math.floor(el)+' из '+dim+' дн.</small></div>';
-  if(g.com){var p=Math.round(m.com/g.com*100),fc=Math.round(m.com/el*dim);h+=goalRow('Комиссия','€'+num(m.com)+' из €'+num(g.com),p,'Прогноз на конец месяца €'+num(fc)+(fc>=g.com?' — цель будет выполнена':' — не хватает €'+num(g.com-fc)),fc>=g.com)}
+  if(g.com){var gm=B.goalMonth||{com:m.com,done:0,n:0,noM:0},p=Math.round(gm.com/g.com*100);h+=goalRow('Комиссия за поездки месяца','€'+num(gm.com)+' из €'+num(g.com),p,'Оплаченных поездок с датой в этом месяце: '+gm.n+' · уже прошли €'+num(gm.done)+(gm.noM?' · без суммы: '+gm.noM:'')+(gm.com>=g.com?' — цель выполнена':' — не хватает €'+num(g.com-gm.com)),gm.com>=g.com)}
   if(g.conv){var c=m.conv;h+=goalRow('Конверсия из всех заявок',(c==null?'—':c+'%')+' · цель '+g.conv+'%',c==null?0:Math.round(c/g.conv*100),'',c!=null&&c>=g.conv)}
   if(g.offerH){var o=m.medOffer;h+=goalRow('Время до оффера, медиана',(o==null?'—':hh(o))+' · цель ≤ '+hh(g.offerH),o==null?0:(o<=g.offerH?100:Math.round(g.offerH/o*100)),'',o!=null&&o<=g.offerH)}
   return h+'</div>'}
